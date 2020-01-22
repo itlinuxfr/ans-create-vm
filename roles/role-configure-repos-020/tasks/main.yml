@@ -1,0 +1,83 @@
+---
+- name: Katello - Copier le RPM Katello Ca
+  copy:
+    src: "{{ katello_rpm_ca }}"
+    dest: "/tmp"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Katello - Copier le script de migration/création d'hôte
+  copy:
+    src: bootstrap.py
+    dest: /tmp
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Katello - Installer le RPM Katello Ca
+  yum:
+    name: "/tmp/{{ katello_rpm_ca }}"
+    state: present
+
+- name: Katello - Supprimer le RPM du dossier /tmp
+  file:
+    state: absent
+    path: "/tmp/{{ katello_rpm_ca }}"
+
+- name: Katello - Supprimer les vieux repos
+  file:
+    path: /etc/yum.repos.d/local-repos.repo
+    state: absent
+
+- name: Katello - Enregistrer la VM
+  shell: |
+        ./bootstrap.py \
+        --login={{ katello_user }} \
+        --password={{ katello_pass }} \
+        --server={{ katello_server }} \
+        --fqdn={{ proxmox_vm_name }} \
+        --activationkey={{ katello_ak }} \
+        --hostgroup={{ katello_hg }} \
+        --organization={{ katello_org }} \
+        --location={{ katello_location }} \
+        --operatingsystem="{{ ansible_distribution }} 7" \
+        --puppet-ca-server={{ katello_server }} \
+        --puppet-server={{ katello_server }} \
+        --ip={{ proxmox_vm_ipv4 }} \
+        --comment="Ansible Managed" \
+        --skip=puppet \
+        --force
+  args:
+    chdir: /tmp
+    warn: no
+
+- name: Katello - Suppression du script de migration/création
+  file:
+    path: /tmp/bootstrap.py
+    state: absent
+
+- name: Katello - Installer les agents Katello
+  yum: 
+    name: "{{ item }}"
+  loop:
+    - katello-host-tools-tracer
+    - katello-host-tools
+    - katello-agent
+
+- name: Katello - Mise à jour
+  yum:
+    name: "*"
+    state: latest
+
+- name: Katello - Redémarrer pour la mise à jour kernel
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+
+- name: Katello - Attente du reboot de la VM
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 300

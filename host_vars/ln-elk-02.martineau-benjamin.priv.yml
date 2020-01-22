@@ -1,0 +1,37 @@
+proxmox_newid: 202
+proxmox_vm_ipv4: "192.168.10.22"
+proxmox_vm_netmask: "/24"
+proxmox_vm_gw: 192.168.10.253
+proxmox_vm_dns: 192.168.10.253
+proxmox_vm_domain: martineau.benjamin.priv
+proxmox_vm_search: martineau.benjamin.priv
+proxmox_vm_hostname: ln-elk-02
+proxmox_vm_name: "{{ proxmox_vm_hostname }}.{{ proxmox_vm_domain }}"
+# Disque VM
+proxmox_disk_size: 60
+proxmox_mount_point: /applis
+proxmox_disk_storage: local-lvm
+proxmox_disk_id: 1
+proxmox_disk_format: raw
+proxmox_bus: scsi
+# Réseau
+proxmox_nicver: e1000
+proxmox_nicnum: net0
+proxmox_nicbridge: vmbr10
+# Coeurs CPU Memoire
+proxmox_vm_cpu: 2
+proxmox_vm_cores: 1
+proxmox_vm_mem: 6112
+# Repos (local|remote)
+repos_method: local
+update_kernel: "yes"
+update_packages: "yes"
+
+# Variables ELK
+elasticsearch_node: worker-01
+elasticsearch_master: "true"
+elasticsearch_data: "true"
+elasticsearch_ingest: "true"
+
+elasticsearch_jvm_min: 2g
+elasticsearch_jvm_max: 2g

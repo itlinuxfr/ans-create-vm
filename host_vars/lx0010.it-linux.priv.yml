@@ -1,0 +1,38 @@
+# Proxmox VM
+proxmox_newid: 301
+proxmox_vm_ipv4: "192.168.10.31"
+proxmox_vm_ipv4_ptr: 31
+proxmox_vm_netmask: "/24"
+proxmox_vm_gw: 192.168.10.253
+proxmox_vm_dns: "192.168.10.61 192.168.10.62"
+proxmox_vm_domain: it-linux.priv
+proxmox_vm_search: it-linux.priv
+proxmox_vm_hostname: lx0010
+proxmox_vm_name: "{{ proxmox_vm_hostname }}.{{ proxmox_vm_domain }}"
+proxmox_vm_note: poc
+
+# Disque VM
+proxmox_disk_size: 50
+proxmox_mount_point: /applis
+proxmox_disk_storage: CEPH_PROD_01_VM
+proxmox_disk_id: 1
+proxmox_disk_format: raw
+proxmox_bus: scsi
+
+# Réseau VM
+proxmox_nicver: e1000
+proxmox_nicnum: net0
+proxmox_nicbridge: vmbr10
+
+# Coeurs CPU Memoire VM
+proxmox_vm_cpu: 2
+proxmox_vm_cores: 2
+proxmox_vm_mem: 8192
+
+# Katello VM
+katello_server: lx0003.it-linux.priv
+katello_rpm_ca: katello-ca-consumer-latest.noarch.rpm
+katello_ak: AK_P_C_7
+katello_org: IT-LINUX
+katello_hg: HG_P_C_7
+katello_location: NIORT

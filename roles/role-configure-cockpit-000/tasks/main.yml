@@ -1,0 +1,41 @@
+---
+
+- name: Cockpit - Installation des paquets cockpit
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - cockpit
+    - cockpit-bridge
+    - cockpit-dashboard
+    - cockpit-packagekit
+    - cockpit-pcp
+    - cockpit-subscriptions
+    - cockpit-system
+    - cockpit-ws
+    - cockpit-storaged
+
+- name: Cockpit - Ouvrir le port firewall pour cockpit
+  firewalld:
+    port: "{{ cockpit_port }}/tcp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Cockpit - Arrêter le service Cockpit
+  systemd:
+    name: cockpit
+    state: stopped
+
+- name: Cockpit - Modification Adresse et Port Cockpit
+  lineinfile:
+    path: /usr/lib/systemd/system/cockpit.socket
+    regexp: '^ListenStream='
+    line: 'ListenStream={{ ansible_default_ipv4.address }}:{{ cockpit_port }}'
+
+- name: Cockpit - Démarrer le service cockpit
+  systemd:
+    name: cockpit.socket
+    state: started
+    enabled: yes
+    daemon_reload: yes

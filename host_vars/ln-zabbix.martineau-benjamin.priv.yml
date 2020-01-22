@@ -1,0 +1,37 @@
+# Proxmox VM
+proxmox_newid: 103
+proxmox_vm_ipv4: "192.168.10.4"
+proxmox_vm_ipv4_ptr: 4
+proxmox_vm_netmask: "/24"
+proxmox_vm_gw: 192.168.10.253
+proxmox_vm_dns: "192.168.10.31 192.168.10.32"
+proxmox_vm_domain: martineau-benjamin.priv
+proxmox_vm_search: martineau-benjamin.priv
+proxmox_vm_hostname: ln-zabbix
+proxmox_vm_name: "{{ proxmox_vm_hostname }}.{{ proxmox_vm_domain }}"
+
+# Disque VM
+proxmox_disk_size: 100
+proxmox_mount_point: /applis
+proxmox_disk_storage: local-lvm
+proxmox_disk_id: 1
+proxmox_disk_format: raw
+proxmox_bus: scsi
+
+# Réseau VM
+proxmox_nicver: e1000
+proxmox_nicnum: net0
+proxmox_nicbridge: vmbr10
+
+# Coeurs CPU Memoire VM
+proxmox_vm_cpu: 2
+proxmox_vm_cores: 4
+proxmox_vm_mem: 6112
+
+# Katello VM
+katello_server: ln-foreman.martineau-benjamin.priv
+katello_rpm_ca: katello-ca-consumer-ln-foreman.martineau-benjamin.priv-1.0-1.noarch.rpm
+katello_ak: AK_P_C_7_MB
+katello_org: MB
+katello_hg: HG_P_C_7_MB
+katello_location: NIORT

@@ -1,0 +1,8 @@
+proxmox_node: pve-03
+proxmox_host: 192.168.10.230
+proxmox_clone: centos-7-itlinux
+proxmox_vmid: 1002
+proxmox_storage: CEPH_PROD_01_VM
+proxmox_format: raw
+proxmox_timeout: 300
+project_vault: proxmox

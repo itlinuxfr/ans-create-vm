@@ -1,0 +1,27 @@
+- name: Proxmox - Vérification de la non présence de la clé SSH de la VM sur son IP
+  lineinfile:
+    path: /root/.ssh/known_hosts
+    state: absent
+    regexp: '^{{ item }}'
+  delegate_to: localhost
+  with_items:
+    - "{{ proxmox_vm_ipv4 }}"
+    - "{{ proxmox_vm_name }}"
+  tags:
+    - erase_ssh_key
+
+- name: Proxmox - Vérifier la connexion
+  wait_for_connection:
+    connect_timeout: 30
+    sleep: 5
+    delay: 5
+    timeout: 300
+
+- name: Proxmox - Copier la clé SSH Public Ansible sur la VM
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    state: present
+  tags:
+    - deploy_ssh_key
+

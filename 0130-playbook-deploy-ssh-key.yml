@@ -1,0 +1,14 @@
+---
+- hosts: create_vm
+  remote_user: root
+  gather_facts: no
+
+  pre_tasks:
+  - name: Include les variables de la VM
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/host_vars/{{ inventory_hostname }}.yml"
+  tasks:
+  - name: Include les roles
+    include_role:
+      name: role-deploy-ssh-key-000
+      allow_duplicates: false

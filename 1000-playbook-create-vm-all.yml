@@ -1,0 +1,13 @@
+---
+
+# Importer les playbooks pour l'installation complète :
+
+- hosts: hyperviseur
+
+- import_playbook: 0100-playbook-create-vm.yml
+- import_playbook: 0120-playbook-configure-network.yml
+- import_playbook: 0130-playbook-deploy-ssh-key.yml
+- import_playbook: 0140-playbook-configure-repos.yml
+- import_playbook: 0150-playbook-configure-ipa-client.yml
+- import_playbook: 0170-playbook-ajout-disque-vm.yml
+#- import_playbook: 0200-playbook-zabbix-agent.yml

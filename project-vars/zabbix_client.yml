@@ -1,0 +1,17 @@
+---
+# Variables Zabbix Client (Agent)
+
+zabbix_server: ln-zabbix.martineau-benjamin.priv
+zabbix_allow_root: 1
+zabbix_allow_rcmd: 1
+zabbix_log_rcmd: 1
+zabbix_agent_port: 10050
+zabbix_hostname: "{{ inventory_hostname }}"
+zabbix_user: Admin
+project_vault: proxmox
+
+# Variable Zabbix Enregistrement
+
+zabbix_location: NIORT
+zabbix_site_rack: NIORT
+zabbix_host_hardware: VM

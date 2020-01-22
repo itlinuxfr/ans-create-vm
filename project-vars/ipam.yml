@@ -1,0 +1,5 @@
+ipam_ip: lx0005.it-linux.priv
+ipam_user: cs-ansible
+ipam_password: cs-ansible
+ipam_token: 34434bae44d19a3e01e565274678b860669b0bb6
+ipam_prefix: "192.168.10.0/24"

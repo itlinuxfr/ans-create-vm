@@ -1,0 +1,70 @@
+---
+
+- name: Zabbix Agent - Passer SELinux en mode permissive
+  selinux:
+    policy: targeted
+    state: permissive
+  when:
+    ansible_facts['distribution'] == "CentOS" or ansible_facts['distribution'] == "RedHat"
+
+- name: Zabbix Agent - Installation de l'agent
+  yum:
+    name: zabbix-agent
+    state: latest
+  when:
+    ansible_facts['distribution'] == "CentOS" or ansible_facts['distribution'] == "RedHat"
+
+- name: Zabbix Agent - Stopper le service si il est démarré
+  systemd:
+    name: zabbix-agent
+    state: stopped
+
+- name: Zabbix Agent - Copie du fichier de configuration
+  template:
+    src: zabbix_agent.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Zabbix Agent - Renseigner la VM sur le Serveur Zabbix
+  local_action:
+    module: zabbix_host
+    server_url: "http://{{ zabbix_server }}/zabbix"
+    login_user: "{{ zabbix_user }}"
+    login_password: "{{ zabbix_password }}"
+    host_name: "{{ inventory_hostname }}"
+    visible_name: "{{ inventory_hostname }}"
+    description: "Ansible Managed"
+    host_groups:
+      - Serveurs Linux
+    link_templates:
+      - Template OS Linux
+    status: enabled
+    state: present
+    inventory_mode: manual
+    inventory_zabbix:
+      location: "{{ zabbix_location }}"
+      site_rack: "{{ zabbix_site_rack }}"
+      os: "{{ ansible_facts['distribution'] }}"
+      hardware: "{{ zabbix_host_hardware }}"
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 2
+        ip: "{{ proxmox_vm_ipv4 }}"
+        dns: "{{ inventory_hostname }}"
+        port: "{{ zabbix_agent_port }}"
+
+- name: Zabbix Agent - Démarrer le service
+  systemd:
+    name: zabbix-agent
+    state: started
+    enabled: yes
+
+- name: Zabbix Agent - Ouvrir le port firewall
+  firewalld:
+    port: "{{ zabbix_agent_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: yes

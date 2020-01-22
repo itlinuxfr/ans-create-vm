@@ -1,0 +1,77 @@
+---
+- name: Proxmox - Chercher l'IP DHCP de l'interface réseau de la VM
+  shell: qm guest cmd {{ proxmox_newid }} network-get-interfaces | grep '192.168.' | awk '{print $3}' | sed -e 's/"//g' | sed -e 's/,//g'
+  register: vm_dhcp_ip
+
+- name: Proxmox - Sourcer l'IP DHCP de l'interface réseau de la VM dans une variable - {{ vm_dhcp_ip.stdout }}
+  set_fact: proxmox_dhcp_ip="{{ vm_dhcp_ip.stdout }}"
+
+# - name: Proxmox - Générer un UUID pour la carte réseau
+#   shell: uuid
+#   register: uuid_network
+
+# - name: Proxmox - Affecter le nouvelle UUID à une variable
+#   set_fact: new_uuid="{{ uuid_network.stdout }}"
+
+- name: Proxmox - Attribuer une IP static à la VM
+  shell: |
+        nmcli con add con-name ens192 ifname ens18 type ethernet ip4 {{ proxmox_vm_ipv4 }}{{ proxmox_vm_netmask }} gw4 {{ proxmox_vm_gw }} 
+        nmcli con mod ens192 ipv4.dns "{{ proxmox_vm_dns }}" ipv4.dns-search {{ proxmox_vm_search }} connection.autoconnect-priority 1
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+  when: proxmox_nicver == "e1000"
+
+- name: Proxmox - Attribuer une IP static à la VM
+  shell: |
+        nmcli con add con-name ens192 ifname eth0 type ethernet ip4 {{ proxmox_vm_ipv4 }}{{ proxmox_vm_netmask }} gw4 {{ proxmox_vm_gw }} 
+        nmcli con mod ens192 ipv4.dns "{{ proxmox_vm_dns }}" ipv4.dns-search {{ proxmox_vm_search }} connection.autoconnect-priority 1
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+  when: proxmox_nicver == "virtio"
+
+- name: Proxmox - Changer le hostname de la VM
+  hostname:
+    name: "{{ proxmox_vm_name }}"
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+
+- name: Proxmox - Recharger la configuartion réseau
+  shell: "nmcli con reload"
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+
+- name: Proxmox - Configurer le fichier /etc/hosts
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    mode: 0644
+    owner: root
+    group: root
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+
+- name: Proxmox - Changer le Machine ID
+  shell: rm /etc/machine-id && systemd-machine-id-setup
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+
+- name: Proxmox - Rebooter la VM avec la nouvelle configuration réseau
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  delegate_to: "{{ proxmox_dhcp_ip }}"
+
+- name: Proxmox - Attendre le reboot de la VM
+  wait_for:
+    timeout: 35
+  delegate_to: localhost
+
+- name: IPA - Initialisation de la connexion au Royaume Kerberos
+  shell: "echo -e '{{ ipa_password }}' | kinit {{ ipa_user }}"
+  delegate_to: "{{ ipa_server_master }}"
+
+- name: IPA - Création d'un record DNS A pour la VM
+  shell: "ipa dnsrecord-add {{ ipa_zone }} {{ proxmox_vm_hostname }} --a-rec {{ proxmox_vm_ipv4 }}"
+  delegate_to: "{{ ipa_server_master }}"
+
+- name: IPA - Création d'un record DNS PTR pour la VM
+  shell: "ipa dnsrecord-add {{ ipa_zone_inv }} {{ proxmox_vm_ipv4_ptr }} --ptr-rec {{ proxmox_vm_name }}."
+  delegate_to: "{{ ipa_server_master }}"
+
+- name: IPA - Détruire le ticket créé
+  shell: "kdestroy"
+  delegate_to: "{{ ipa_server_master }}"

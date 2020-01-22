@@ -1,0 +1,12 @@
+---
+
+ipa_server_master: lx0001.it-linux.priv
+ipa_server_slave: lx0002.it-linux.priv
+ipa_server_master_ip: 192.168.10.61
+ipa_server_slave_ip: 192.168.10.62
+ipa_server_master_short: lx0001
+ipa_server_slave_short: lx0002
+ipa_domain: it-linux.priv
+ipa_realm: IT-LINUX.PRIV
+ipa_zone: it-linux.priv
+ipa_zone_inv: 10.168.192.in-addr.arpa.

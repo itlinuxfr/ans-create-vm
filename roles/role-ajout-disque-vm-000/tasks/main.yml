@@ -1,0 +1,45 @@
+- name: Proxmox - Ajouter le disque à la VM
+  shell: "pvesh create /nodes/{{ proxmox_node }}/qemu/{{ proxmox_newid }}/config -{{ proxmox_bus }}{{ proxmox_disk_id }} '{{ proxmox_disk_storage }}:{{ proxmox_disk_size }},format={{ proxmox_disk_format }}'"
+  delegate_to: "{{ proxmox_host }}"
+  tags:
+    - add_disk
+
+- name: Proxmox - Attendre la mise à jour de pvesh
+  wait_for: timeout=7
+  delegate_to: localhost
+
+- name: Proxmox - Vérifier la présence du point de montage
+  file:
+    path: "{{ proxmox_mount_point }}"
+    state: directory
+    mode: 0775
+  delegate_to: "{{ groups['create_vm'][0] }}"
+
+- name: Proxmox - Création du VG pour {{ proxmox_mount_point }}
+  lvg:
+    vg: vg_applis
+    pvs: /dev/sdb
+    state: present
+  delegate_to: "{{ groups['create_vm'][0] }}"
+
+- name: Proxmox - Création du LV pour {{ proxmox_mount_point }}
+  lvol:
+    vg: vg_applis
+    lv: lv_applis
+    size: 100%FREE
+    state: present
+  delegate_to: "{{ groups['create_vm'][0] }}"
+
+- name: Proxmox - Formater le LV {{ proxmox_mount_point }}
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_applis-lv_applis
+  delegate_to: "{{ groups['create_vm'][0] }}"
+
+- name: Proxmox - Monter le LV {{ proxmox_mount_point }} et modifier le fstab
+  mount:
+    name: "{{ proxmox_mount_point }}"
+    src: /dev/vg_applis/lv_applis
+    fstype: xfs
+    state: mounted
+  delegate_to: "{{ groups['create_vm'][0] }}"

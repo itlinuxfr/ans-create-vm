@@ -1,0 +1,51 @@
+- name: Proxmox - Création de la machine virtuelle
+  proxmox_kvm:
+    api_user    : "{{ proxmox_user }}"
+    api_password: "{{ proxmox_pwd }}"
+    api_host    : "{{ proxmox_host }}"
+    clone       : "{{ proxmox_clone }}"
+    name        : "{{ proxmox_vm_name }}"
+    node        : "{{ proxmox_node }}"
+    storage     : "{{ proxmox_storage }}"
+    format      : "{{ proxmox_format }}"
+    timeout     : "{{ proxmox_timeout }}"
+    vmid        : "{{ proxmox_vmid }}"
+    newid       : "{{ proxmox_newid }}"
+    description : "{{ proxmox_vm_note }}"
+  tags:
+    - deploy_vm
+
+# - name: Proxmox - Ajout des cartes réseaux
+#   shell: qm set {{ proxmox_newid }} --{{ proxmox_nicnum }} model="{{ proxmox_nicver }},bridge={{ proxmox_nicbridge }}"
+#   tags:
+#     - add_nics
+
+- name: Proxmox - Modificer les propriétés hardware de la VM
+  shell: qm set {{ proxmox_newid }} --cores {{ proxmox_vm_cores}} --memory {{ proxmox_vm_mem }} --sockets {{ proxmox_vm_cpu }} --numa 1 --hotplug network,disk,cpu,memory && sleep 5
+
+
+- name: Proxmox - Démarrage de la machine virtuelle  "{{ proxmox_vm_name }}"
+  proxmox_kvm:
+    api_user    : "{{ proxmox_user }}"
+    api_password: "{{ proxmox_pwd }}"
+    api_host    : "{{ proxmox_host }}"
+    name        : "{{ proxmox_vm_name }}"
+    node        : "{{ proxmox_node }}"
+    state       : "started"
+  tags:
+    - start_vm
+
+- name: Proxmox - Attendre le démarrage de la VM
+  wait_for: timeout=45
+  delegate_to: localhost
+
+- name: Proxmox - Sourcer le status de la VM
+  shell: qm status "{{ proxmox_newid }}" | grep -c "running"
+  register: vm_status
+
+- name: Proxmox - Vérification du démarrage de la VM
+  debug:
+    msg: "La VM {{ proxmox_newid }} - {{ proxmox_vm_name }} est démarré"
+  when: vm_status.stdout == "1"
+  tags:
+    - check_status_vm

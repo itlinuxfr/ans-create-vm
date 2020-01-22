@@ -1,0 +1,9 @@
+---
+- name: IPA - Installation du Client IPA
+  yum:
+    name: ipa-client
+    state: present
+
+- name: IPA - Enregistrement de la VM sur le domaine IPA
+  shell: "ipa-client-install --principal={{ ipa_user }} --password={{ ipa_password }} --server={{ ipa_server_master }} --server={{ ipa_server_slave }} --realm={{ ipa_realm }} --domain={{ ipa_domain }} --force-ntpd --force-join --hostname {{ proxmox_vm_name }} --fixed-primary --unattended --mkhomedir"
+

@@ -1,0 +1,17 @@
+---
+- hosts: cockpit_client
+  remote_user: root
+  gather_facts: yes
+
+  pre_tasks:
+  - name: Include les variables de la VM
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/host_vars/{{ inventory_hostname }}.yml"
+  - name: Inclure les variables du projet
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/project-vars/cockpit.yml"
+  tasks:
+  - name: Include les roles
+    include_role:
+      name: role-configure-cockpit-000
+      allow_duplicates: false

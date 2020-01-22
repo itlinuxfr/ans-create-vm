@@ -1,0 +1,25 @@
+---
+
+- name: Proxmox - Installer les paquets requis
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - NetworkManager
+    - ntp
+    - wget
+    - curl
+    - ca-certificates
+    - nano
+    - lsof
+    - net-tools
+    - bind-utils
+    - libsemanage-python
+    - policycoreutils-python
+    - qemu-guest-agent
+    - NetworkManager-libnm.x86_64
+    - NetworkManager-glib.x86_64
+    - libgudev1.x86_64
+  ignore_errors: yes
+  tags:
+    - install_package

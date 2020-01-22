@@ -1,0 +1,20 @@
+---
+- hosts: hyperviseur
+  remote_user: root
+
+  pre_tasks:
+  - name: Inclure les variables du projet
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/project-vars/proxmox_vm.yml"
+  - name: Inclure les variables de la VM
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/host_vars/{{ groups['create_vm'][0]}}.yml"
+  - name: Sourcer le vault
+    include_vars:
+      file: "/applis/ansible/ans-create-vm/vault/{{ project_vault }}.yml"
+
+  tasks:
+  - name: Inclure les roles
+    include_role:
+      name: role-create-vm-000
+      allow_duplicates: false
